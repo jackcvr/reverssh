@@ -45,10 +45,10 @@ Usage of reverssh:
 
 ## Examples
 
-Start tarpit on 22 port and redirect bots back to 22 port:
+Start reversing tarpit on 22 port (with redirect clients back to the same port):
 
 ```shell
-$ sudo reverssh -b 0.0.0.0:2222 -p 22
+$ sudo reverssh -b 0.0.0.0:22 -p 22
 {"time":"2024-09-14T17:13:27.111626861+03:00","level":"INFO","msg":"listening","addr":"0.0.0.0:2222"}
 {"time":"2024-09-14T17:13:32.080358768+03:00","level":"INFO","msg":"accepted","laddr":"127.0.0.1:2222","raddr":"127.0.0.1:39680"}
 {"time":"2024-09-14T17:13:32.08045588+03:00","level":"INFO","msg":"connected","laddr":"127.0.0.1:40136","raddr":"127.0.0.1:22"}
