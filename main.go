@@ -2,6 +2,8 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"io"
 	"log"
 	"log/slog"
 	"os"
@@ -14,19 +16,32 @@ func init() {
 }
 
 func main() {
+	var logFile string
+	var showStats bool
 	app := App{
 		level: Level(slog.LevelInfo),
 	}
 
 	flag.BoolVar(&app.quiet, "q", false, "Do not print anything (default false)")
 	flag.Var(&app.level, "l", "Log level. Possible values: debug, info, warn, error (default info)")
-	flag.StringVar(&app.file, "f", "", "Log file (default stdout)")
+	flag.StringVar(&logFile, "f", "", "Log file (default stdout)")
 	flag.StringVar(&app.bindAddress, "b", "0.0.0.0:22", "Local address to listen on")
 	flag.Var(&app.remotePorts, "p", "Remote ports to connect to, e.g. '22,2222'")
+	flag.BoolVar(&showStats, "stats", false, "Show active connections info")
 	flag.Parse()
 
+	if showStats {
+		data, err := ReadStats()
+		if err != nil && err != io.EOF {
+			app.Error(err.Error())
+		} else {
+			fmt.Print(string(data))
+		}
+		return
+	}
+
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
-	logger, err := NewLogger(app.file, app.level)
+	logger, err := NewLogger(logFile, app.level)
 	if err != nil {
 		app.Error(err.Error())
 		return

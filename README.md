@@ -37,12 +37,14 @@ Usage of reverssh:
   -p value
     	Remote ports to connect to, e.g. '22,2222'
   -q	Do not print anything (default false)
+  -stats
+    	Show active connections info
 ```
 
 ## Examples
 
 ```shell
-$ reverssh -b 0.0.0.0:2222 -p 22  # log sample when reversed connection succeeded
+$ sudo reverssh -b 0.0.0.0:2222 -p 22  # log sample when reversed connection succeeded
 {"time":"2024-09-14T17:13:27.111626861+03:00","level":"INFO","msg":"listening","addr":"0.0.0.0:2222"}
 {"time":"2024-09-14T17:13:32.080358768+03:00","level":"INFO","msg":"accepted","laddr":"127.0.0.1:2222","raddr":"127.0.0.1:39680"}
 {"time":"2024-09-14T17:13:32.08045588+03:00","level":"INFO","msg":"connected","laddr":"127.0.0.1:40136","raddr":"127.0.0.1:22"}
@@ -51,10 +53,18 @@ $ reverssh -b 0.0.0.0:2222 -p 22  # log sample when reversed connection succeede
 ```
 
 ```shell
-$ reverssh -b 0.0.0.0:2222 -p 23  # log sample without successful connection to clients server
+$ sudo reverssh -b 0.0.0.0:2222 -p 23  # log sample without successful connection to clients server
 {"time":"2024-09-14T17:15:01.726948856+03:00","level":"INFO","msg":"listening","addr":"0.0.0.0:2222"}
 {"time":"2024-09-14T17:15:04.231376092+03:00","level":"INFO","msg":"accepted","laddr":"127.0.0.1:2222","raddr":"127.0.0.1:58262"}
 {"time":"2024-09-14T17:15:11.239589332+03:00","level":"INFO","msg":"closed","laddr":"127.0.0.1:2222","raddr":"127.0.0.1:58262","lifetime":6}
+```
+
+```shell
+# lifetime in seconds
+# reversed=true if traffic successfully reversed back to "bad client"
+sudo reverssh -stats
+127.0.0.1:48800 lifetime=4 reversed=true
+127.0.0.1:57968 lifetime=23 reversed=true
 ```
 
 ## License
