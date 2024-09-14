@@ -8,11 +8,11 @@ import (
 
 const charset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-var lettersLen = len(charset)
+var charsetSize = len(charset)
 
 func RandBytes(buf []byte) {
 	for i := range buf {
-		buf[i] = charset[rand.Intn(lettersLen)]
+		buf[i] = charset[rand.Intn(charsetSize)]
 	}
 }
 
