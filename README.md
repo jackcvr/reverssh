@@ -20,8 +20,8 @@ Download binary manually:
 or via command:
 
 ```shell
-`sh -c "wget -O /usr/local/bin/reverssh https://raw.githubusercontent.com/jackcvr/reverssh/main/bin/$(uname -m)/reverssh \
-  && chmod +x /usr/local/bin/reverssh"`
+sh -c "wget -O /usr/local/bin/reverssh https://raw.githubusercontent.com/jackcvr/reverssh/main/bin/$(uname -m)/reverssh \
+  && chmod +x /usr/local/bin/reverssh"
 ```
 
 ## Usage
