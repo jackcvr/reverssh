@@ -60,7 +60,7 @@ func ReadStats() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	buf := make([]byte, 1024)
+	buf := make([]byte, 1024*32)
 	var n int
 	n, err = c.Read(buf)
 	if err != nil {

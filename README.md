@@ -2,11 +2,13 @@
 
 Reversing SSH tarpit.
 
-You can specify port numbers (e.g., -p `22,2222`) for `reverssh` to attempt connections on each of the listed ports. 
-If a connection is successful, `reverssh` will forward all incoming traffic back to the attacker's server, 
-causing them to interact with their own system.
+This tool makes SSH bots brute-force themselves. 
+If port numbers are specified (e.g., `-p 22,2222`), 
+`reverssh` will attempt connections on each of the listed ports of the SSH client. 
+If any connection is successful, it forwards all incoming traffic back to the open port, 
+causing bots to interact with their own servers.
 
-If no ports are specified, or if the provided ports are closed, `reverssh` operates as a standard SSH tarpit, 
+If no ports are specified, or if all provided ports are closed, `reverssh` behaves as a standard SSH tarpit, 
 sending one random byte per second.
 
 ## Installation
@@ -43,8 +45,10 @@ Usage of reverssh:
 
 ## Examples
 
+Start tarpit on 22 port and redirect bots back to 22 port:
+
 ```shell
-$ sudo reverssh -b 0.0.0.0:2222 -p 22  # log sample when reversed connection succeeded
+$ sudo reverssh -b 0.0.0.0:2222 -p 22
 {"time":"2024-09-14T17:13:27.111626861+03:00","level":"INFO","msg":"listening","addr":"0.0.0.0:2222"}
 {"time":"2024-09-14T17:13:32.080358768+03:00","level":"INFO","msg":"accepted","laddr":"127.0.0.1:2222","raddr":"127.0.0.1:39680"}
 {"time":"2024-09-14T17:13:32.08045588+03:00","level":"INFO","msg":"connected","laddr":"127.0.0.1:40136","raddr":"127.0.0.1:22"}
@@ -52,16 +56,18 @@ $ sudo reverssh -b 0.0.0.0:2222 -p 22  # log sample when reversed connection suc
 {"time":"2024-09-14T17:13:47.009419814+03:00","level":"INFO","msg":"closed","laddr":"127.0.0.1:2222","raddr":"127.0.0.1:39680","lifetime":13}
 ```
 
+Start normal tarpit on 2222 port:
+
 ```shell
-$ sudo reverssh -b 0.0.0.0:2222 -p 23  # log sample without successful connection to clients server
+$ sudo reverssh -b 0.0.0.0:2222
 {"time":"2024-09-14T17:15:01.726948856+03:00","level":"INFO","msg":"listening","addr":"0.0.0.0:2222"}
 {"time":"2024-09-14T17:15:04.231376092+03:00","level":"INFO","msg":"accepted","laddr":"127.0.0.1:2222","raddr":"127.0.0.1:58262"}
 {"time":"2024-09-14T17:15:11.239589332+03:00","level":"INFO","msg":"closed","laddr":"127.0.0.1:2222","raddr":"127.0.0.1:58262","lifetime":6}
 ```
 
+Show current activity:
+
 ```shell
-# lifetime in seconds
-# reversed=true if traffic successfully reversed back to "bad client"
 sudo reverssh -stats
 127.0.0.1:48800 lifetime=4 reversed=true
 127.0.0.1:57968 lifetime=23 reversed=true
