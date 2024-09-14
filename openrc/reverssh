@@ -1,0 +1,12 @@
+#!/sbin/openrc-run
+
+supervisor=supervise-daemon
+
+command="/usr/local/bin/reverssh"
+command_args="-f /var/log/reverssh.log -p 22,2222"
+description="Reversing SSH tarpit"
+
+depend() {
+	need net
+	after firewall
+}
