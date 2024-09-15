@@ -10,9 +10,10 @@ import (
 
 const StatServerSock = "/var/run/reverssh.sock"
 
-type Stats map[string]*Record
+type Stats map[string]*Conn
 
-type Record struct {
+type Conn struct {
+	net.Conn
 	StartTime  time.Time
 	IsReversed bool
 }
@@ -42,11 +43,11 @@ func (stats Stats) RunServer(ctx context.Context) {
 			app.LogError("accepting", "reason", err.Error())
 			continue
 		}
-		res := ""
+		res := "active connections:\n"
 		now := time.Now()
-		for addr, record := range stats {
-			lifetime := now.Sub(record.StartTime)
-			res += fmt.Sprintf("%s lifetime=%d reversed=%t\n", addr, int(lifetime.Seconds()), record.IsReversed)
+		for addr, conn := range stats {
+			lifetime := now.Sub(conn.StartTime)
+			res += fmt.Sprintf("%s lifetime=%d reversed=%t\n", addr, int(lifetime.Seconds()), conn.IsReversed)
 		}
 		if _, err = c.Write([]byte(res)); err != nil {
 			app.LogError("writing", "reason", err.Error())

@@ -55,30 +55,29 @@ func (app App) Run() error {
 	stats := Stats{}
 	go stats.RunServer(context.WithValue(ctx, "app", &app))
 
-	var c net.Conn
 	for {
-		c, err = ln.Accept()
+		var c Conn
+		c.Conn, err = ln.Accept()
 		if err != nil {
 			app.LogError("accepting", "reason", err.Error(), "addr", ln.Addr().String())
 			continue
 		}
 		remoteAddr := c.RemoteAddr().String()
 		app.LogInfo("accepted", "laddr", c.LocalAddr().String(), "raddr", remoteAddr)
-		record := Record{}
-		stats[remoteAddr] = &record
+		stats[remoteAddr] = &c
 		go func() {
 			defer func() {
 				_ = c.Close()
 				delete(stats, remoteAddr)
 			}()
-			app.Handle(c, &record)
+			app.Handle(&c)
 		}()
 	}
 }
 
-func (app App) Handle(localConn net.Conn, record *Record) {
+func (app App) Handle(localConn *Conn) {
 	startTime := time.Now()
-	record.StartTime = startTime
+	localConn.StartTime = startTime
 	laddr := localConn.LocalAddr().String()
 	raddr := localConn.RemoteAddr().String()
 
@@ -88,7 +87,7 @@ func (app App) Handle(localConn net.Conn, record *Record) {
 	}()
 
 	for _, port := range app.remotePorts {
-		if err := app.ConnectRemote(localConn, port, record); err != nil {
+		if err := app.ConnectRemote(localConn, port); err != nil {
 			app.LogDebug("error", "reason", err.Error())
 		} else {
 			return
@@ -109,6 +108,7 @@ func (app App) Handle(localConn net.Conn, record *Record) {
 
 	payload := make([]byte, 1)
 	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
 	for {
 		<-ticker.C
 		RandBytes(payload)
@@ -120,7 +120,7 @@ func (app App) Handle(localConn net.Conn, record *Record) {
 	}
 }
 
-func (app App) ConnectRemote(localConn net.Conn, port int, record *Record) error {
+func (app App) ConnectRemote(localConn *Conn, port int) error {
 	remoteAddr, _ := localConn.RemoteAddr().(*net.TCPAddr)
 	remoteConn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", remoteAddr.IP, port))
 	if err != nil {
@@ -133,6 +133,6 @@ func (app App) ConnectRemote(localConn net.Conn, port int, record *Record) error
 		app.LogInfo("closed", "laddr", laddr, "raddr", raddr)
 	}()
 	app.LogInfo("connected", "laddr", laddr, "raddr", raddr)
-	record.IsReversed = true
+	localConn.IsReversed = true
 	return Swap(remoteConn, localConn)
 }
