@@ -68,7 +68,7 @@ $ sudo reverssh -b 0.0.0.0:2222
 Show current activity:
 
 ```shell
-sudo reverssh -stats
+$ sudo reverssh -stats
 active connections:
 127.0.0.1:48800 lifetime=4 reversed=true
 127.0.0.1:57968 lifetime=23 reversed=true
