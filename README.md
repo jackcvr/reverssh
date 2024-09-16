@@ -13,18 +13,7 @@ sending one random byte per second.
 
 ## Installation
 
-Download binary manually:
-
-- [reverssh-linux-x86_64](https://raw.githubusercontent.com/jackcvr/reverssh/main/bin/x86_64/reverssh)
-- [reverssh-linux-aarch64](https://raw.githubusercontent.com/jackcvr/reverssh/main/bin/aarch64/reverssh)
-- [reverssh-linux-armv7l](https://raw.githubusercontent.com/jackcvr/reverssh/main/bin/armv7l/reverssh)
-
-or via command:
-
-```shell
-sh -c "wget -O /usr/local/bin/reverssh https://raw.githubusercontent.com/jackcvr/reverssh/main/bin/$(uname -m)/reverssh \
-  && chmod +x /usr/local/bin/reverssh"
-```
+See [Releases](https://github.com/jackcvr/reverssh/releases)
 
 ## Usage
 
