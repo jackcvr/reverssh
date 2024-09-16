@@ -42,7 +42,7 @@ $ sudo reverssh -b 0.0.0.0:22 -p 22
 {"time":"2024-09-14T17:13:32.080358768+03:00","level":"INFO","msg":"accepted","laddr":"127.0.0.1:2222","raddr":"127.0.0.1:39680"}
 {"time":"2024-09-14T17:13:32.08045588+03:00","level":"INFO","msg":"connected","laddr":"127.0.0.1:40136","raddr":"127.0.0.1:22"}
 {"time":"2024-09-14T17:13:45.008896864+03:00","level":"INFO","msg":"closed","laddr":"127.0.0.1:40136","raddr":"127.0.0.1:22"}
-{"time":"2024-09-14T17:13:47.009419814+03:00","level":"INFO","msg":"closed","laddr":"127.0.0.1:2222","raddr":"127.0.0.1:39680","lifetime":13}
+{"time":"2024-09-14T17:13:47.009419814+03:00","level":"INFO","msg":"closed","laddr":"127.0.0.1:2222","raddr":"127.0.0.1:39680","lifetime":13,"reversed":true}
 ```
 
 Start normal tarpit on 2222 port:
@@ -51,7 +51,7 @@ Start normal tarpit on 2222 port:
 $ sudo reverssh -b 0.0.0.0:2222
 {"time":"2024-09-14T17:15:01.726948856+03:00","level":"INFO","msg":"listening","addr":"0.0.0.0:2222"}
 {"time":"2024-09-14T17:15:04.231376092+03:00","level":"INFO","msg":"accepted","laddr":"127.0.0.1:2222","raddr":"127.0.0.1:58262"}
-{"time":"2024-09-14T17:15:11.239589332+03:00","level":"INFO","msg":"closed","laddr":"127.0.0.1:2222","raddr":"127.0.0.1:58262","lifetime":6}
+{"time":"2024-09-14T17:15:11.239589332+03:00","level":"INFO","msg":"closed","laddr":"127.0.0.1:2222","raddr":"127.0.0.1:58262","lifetime":6,"reversed":false}
 ```
 
 Show current activity:
