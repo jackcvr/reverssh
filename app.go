@@ -83,7 +83,11 @@ func (app App) Handle(localConn *Conn) {
 
 	defer func() {
 		duration := time.Now().Sub(startTime) - time.Second
-		app.LogInfo("closed", "laddr", laddr, "raddr", raddr, "lifetime", int(duration.Seconds()))
+		app.LogInfo("closed",
+			"laddr", laddr,
+			"raddr", raddr,
+			"lifetime", int(duration.Seconds()),
+			"reversed", localConn.IsReversed)
 	}()
 
 	for _, port := range app.remotePorts {
