@@ -1,0 +1,10 @@
+[Unit]
+Description=Reversing SSH tarpit
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/reverssh -b 0.0.0.0:22 -p 22,2222
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

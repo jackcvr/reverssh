@@ -3,7 +3,7 @@
 supervisor=supervise-daemon
 
 command="/usr/local/bin/reverssh"
-command_args="-f /var/log/reverssh.log -p 22,2222"
+command_args="-b 0.0.0.0:22 -p 22,2222 -f /var/log/reverssh.log"
 description="Reversing SSH tarpit"
 
 depend() {
