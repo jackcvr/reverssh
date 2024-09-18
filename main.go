@@ -16,21 +16,24 @@ func init() {
 }
 
 func main() {
+	var verbose bool
 	var logFile string
-	var showStats bool
-	app := App{
-		level: Level(slog.LevelInfo),
-	}
+	var showActive bool
+	var app App
 
-	flag.BoolVar(&app.quiet, "q", false, "Do not print anything (default false)")
-	flag.Var(&app.level, "l", "Log level. Possible values: debug, info, warn, error (default info)")
+	flag.BoolVar(&verbose, "v", false, "Verbose mode")
 	flag.StringVar(&logFile, "f", "", "Log file (default stdout)")
-	flag.StringVar(&app.bindAddress, "b", "0.0.0.0:22", "Local address to listen on")
+	flag.BoolVar(&showActive, "active", false, "Show active connections info")
+	flag.BoolVar(&app.quiet, "q", false, "Do not print anything")
+	flag.Var(&app.bindAddress, "b", "Local address to listen on")
 	flag.Var(&app.remotePorts, "p", "Remote ports to connect to, e.g. '22,2222'")
-	flag.BoolVar(&showStats, "stats", false, "Show active connections info")
 	flag.Parse()
 
-	if showStats {
+	if len(app.bindAddress) == 0 {
+		app.bindAddress = BindAddress{"0.0.0.0:22"}
+	}
+
+	if showActive {
 		data, err := ReadStats()
 		if err != nil && err != io.EOF {
 			app.Error(err.Error())
@@ -41,7 +44,11 @@ func main() {
 	}
 
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
-	logger, err := NewLogger(logFile, app.level)
+	level := slog.LevelInfo
+	if verbose {
+		level = slog.LevelDebug
+	}
+	logger, err := NewLogger(logFile, level)
 	if err != nil {
 		app.Error(err.Error())
 		return
@@ -53,7 +60,7 @@ func main() {
 	}
 }
 
-func NewLogger(file string, level Level) (*slog.Logger, error) {
+func NewLogger(file string, level slog.Level) (*slog.Logger, error) {
 	w := os.Stdout
 	if file != "" {
 		var err error
@@ -62,5 +69,5 @@ func NewLogger(file string, level Level) (*slog.Logger, error) {
 			return nil, err
 		}
 	}
-	return slog.New(slog.NewJSONHandler(w, &slog.HandlerOptions{Level: slog.Level(level)})), nil
+	return slog.New(slog.NewJSONHandler(w, &slog.HandlerOptions{Level: level})), nil
 }

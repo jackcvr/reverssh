@@ -10,10 +10,9 @@ import (
 
 const StatServerSock = "/var/run/reverssh.sock"
 
-type Stats map[string]*Conn
+type Stats map[string]*ConnInfo
 
-type Conn struct {
-	net.Conn
+type ConnInfo struct {
 	StartTime  time.Time
 	IsReversed bool
 }
@@ -23,12 +22,12 @@ func (stats Stats) RunServer(ctx context.Context) {
 	defer os.Remove(StatServerSock)
 
 	app := ctx.Value("app").(*App)
-	s, err := net.Listen("unix", StatServerSock)
+	ln, err := net.Listen("unix", StatServerSock)
 	if err != nil {
 		app.LogError("listening", "reason", err)
 		return
 	}
-	defer s.Close()
+	defer ln.Close()
 
 	app.LogInfo("listening", "addr", StatServerSock)
 	for {
@@ -38,16 +37,16 @@ func (stats Stats) RunServer(ctx context.Context) {
 		default:
 		}
 		var c net.Conn
-		c, err = s.Accept()
+		c, err = ln.Accept()
 		if err != nil {
 			app.LogError("accepting", "reason", err.Error())
 			continue
 		}
 		res := "active connections:\n"
 		now := time.Now()
-		for addr, conn := range stats {
-			lifetime := now.Sub(conn.StartTime)
-			res += fmt.Sprintf("%s lifetime=%d reversed=%t\n", addr, int(lifetime.Seconds()), conn.IsReversed)
+		for addr, info := range stats {
+			lifetime := now.Sub(info.StartTime)
+			res += fmt.Sprintf("%s lifetime=%d reversed=%t\n", addr, int(lifetime.Seconds()), info.IsReversed)
 		}
 		if _, err = c.Write([]byte(res)); err != nil {
 			app.LogError("writing", "reason", err.Error())

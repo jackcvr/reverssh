@@ -1,32 +1,19 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"log/slog"
 	"strconv"
 	"strings"
 )
 
-type Level slog.Level
+type BindAddress []string
 
-func (l *Level) String() (s string) {
-	return fmt.Sprintf("%d", *l)
+func (b *BindAddress) String() string {
+	return strings.Join(*b, ", ")
 }
 
-func (l *Level) Set(value string) error {
-	switch value {
-	case "debug":
-		*l = Level(slog.LevelDebug)
-	case "info":
-		*l = Level(slog.LevelInfo)
-	case "warn":
-		*l = Level(slog.LevelWarn)
-	case "error":
-		*l = Level(slog.LevelError)
-	default:
-		return errors.New("invalid level")
-	}
+func (b *BindAddress) Set(value string) error {
+	*b = append(*b, value)
 	return nil
 }
 

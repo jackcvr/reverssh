@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"golang.org/x/sync/errgroup"
 	"io"
 	"log/slog"
 	"net"
@@ -12,8 +13,7 @@ import (
 
 type App struct {
 	quiet       bool
-	level       Level
-	bindAddress string
+	bindAddress BindAddress
 	remotePorts Ports
 }
 
@@ -42,44 +42,64 @@ func (app App) LogError(format string, args ...any) {
 }
 
 func (app App) Run() error {
-	ln, err := net.Listen("tcp", app.bindAddress)
+	ctx := context.WithValue(context.Background(), "app", &app)
+	stats := Stats{}
+	go stats.RunServer(ctx)
+
+	if len(app.bindAddress) > 1 {
+		var g *errgroup.Group
+		g, ctx = errgroup.WithContext(ctx)
+		for _, addr := range app.bindAddress {
+			g.Go(func() error {
+				return app.Listen(ctx, addr, stats)
+			})
+		}
+		return g.Wait()
+	}
+
+	return app.Listen(ctx, app.bindAddress[0], stats)
+}
+
+func (app App) Listen(ctx context.Context, addr string, stats Stats) error {
+	ln, err := net.Listen("tcp", addr)
 	if err != nil {
 		return err
 	}
 	defer ln.Close()
-	app.LogInfo("listening", "addr", app.bindAddress)
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	stats := Stats{}
-	go stats.RunServer(context.WithValue(ctx, "app", &app))
+	app.LogInfo("listening", "addr", addr)
 
 	for {
-		var c Conn
-		c.Conn, err = ln.Accept()
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+		}
+		var c net.Conn
+		c, err = ln.Accept()
 		if err != nil {
-			app.LogError("accepting", "reason", err.Error(), "addr", ln.Addr().String())
+			app.LogError("accepting", "reason", err.Error(), "addr", ln.Addr())
 			continue
 		}
-		remoteAddr := c.RemoteAddr().String()
-		app.LogInfo("accepted", "laddr", c.LocalAddr().String(), "raddr", remoteAddr)
-		stats[remoteAddr] = &c
+		key := c.RemoteAddr().String()
+		info := &ConnInfo{}
+		stats[key] = info
 		go func() {
 			defer func() {
 				_ = c.Close()
-				delete(stats, remoteAddr)
+				delete(stats, key)
 			}()
-			app.Handle(&c)
+			app.HandleConnection(c, info)
 		}()
 	}
 }
 
-func (app App) Handle(localConn *Conn) {
+func (app App) HandleConnection(localConn net.Conn, info *ConnInfo) {
 	startTime := time.Now()
-	localConn.StartTime = startTime
-	laddr := localConn.LocalAddr().String()
-	raddr := localConn.RemoteAddr().String()
+	info.StartTime = startTime
+	laddr := localConn.LocalAddr()
+	raddr := localConn.RemoteAddr()
+
+	app.LogInfo("accepted", "laddr", laddr, "raddr", raddr)
 
 	defer func() {
 		duration := time.Now().Sub(startTime) - time.Second
@@ -87,11 +107,11 @@ func (app App) Handle(localConn *Conn) {
 			"laddr", laddr,
 			"raddr", raddr,
 			"lifetime", int(duration.Seconds()),
-			"reversed", localConn.IsReversed)
+			"reversed", info.IsReversed)
 	}()
 
 	for _, port := range app.remotePorts {
-		if err := app.ConnectRemote(localConn, port); err != nil {
+		if err := app.ConnectRemote(localConn, port, info); err != nil {
 			app.LogDebug("error", "reason", err.Error())
 		} else {
 			return
@@ -124,19 +144,19 @@ func (app App) Handle(localConn *Conn) {
 	}
 }
 
-func (app App) ConnectRemote(localConn *Conn, port int) error {
+func (app App) ConnectRemote(localConn net.Conn, port int, info *ConnInfo) error {
 	remoteAddr, _ := localConn.RemoteAddr().(*net.TCPAddr)
 	remoteConn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", remoteAddr.IP, port))
 	if err != nil {
 		return err
 	}
-	laddr := remoteConn.LocalAddr().String()
-	raddr := remoteConn.RemoteAddr().String()
+	laddr := remoteConn.LocalAddr()
+	raddr := remoteConn.RemoteAddr()
 	defer func() {
 		remoteConn.Close()
 		app.LogInfo("closed", "laddr", laddr, "raddr", raddr)
 	}()
 	app.LogInfo("connected", "laddr", laddr, "raddr", raddr)
-	localConn.IsReversed = true
+	info.IsReversed = true
 	return Swap(remoteConn, localConn)
 }
