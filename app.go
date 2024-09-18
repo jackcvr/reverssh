@@ -158,5 +158,7 @@ func (app App) ConnectRemote(localConn net.Conn, port int, info *ConnInfo) error
 	}()
 	app.LogInfo("connected", "laddr", laddr, "raddr", raddr)
 	info.IsReversed = true
-	return Swap(remoteConn, localConn)
+	go io.Copy(localConn, remoteConn)
+	_, err = io.Copy(remoteConn, localConn)
+	return err
 }
