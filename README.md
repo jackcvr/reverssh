@@ -1,9 +1,9 @@
 # reverssh
 
-Reversing SSH tarpit.
+Reversing SSH Tarpit.
 
 This tool makes SSH bots brute-force themselves. 
-By using argument `-p` you can specify port numbers (e.g., `-p 22,2222`) to instruct  
+By using argument `-p` you can specify port numbers (e.g., `-p 22,2222`) to instruct 
 `reverssh` attempt connections on each of the specified ports of the SSH client. 
 If any connection is successful, it forwards all incoming traffic back to the open port, 
 causing bots to interact with their own servers.
@@ -12,7 +12,7 @@ If no ports are specified, or if all provided ports are closed, `reverssh` behav
 sending one random byte per second.
 
 Other features:
-- linux packages(apk, deb) include ready to use services(openrc, systemd)
+- linux packages(apk, deb) include services(openrc, systemd) which you might want to adjust
 - argument `-b` can be provided few times to listen on few addresses
 - JSON structured logs
 - ability to watch active connections

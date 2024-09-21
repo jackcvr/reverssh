@@ -6,14 +6,14 @@ import (
 	"strings"
 )
 
-type BindAddress []string
+type StringList []string
 
-func (b *BindAddress) String() string {
-	return strings.Join(*b, ", ")
+func (l *StringList) String() string {
+	return strings.Join(*l, ",")
 }
 
-func (b *BindAddress) Set(value string) error {
-	*b = append(*b, value)
+func (l *StringList) Set(value string) error {
+	*l = append(*l, value)
 	return nil
 }
 

@@ -30,7 +30,7 @@ func main() {
 	flag.Parse()
 
 	if len(app.bindAddress) == 0 {
-		app.bindAddress = BindAddress{"0.0.0.0:22"}
+		app.bindAddress = StringList{"0.0.0.0:22"}
 	}
 
 	if showActive {

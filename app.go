@@ -13,7 +13,7 @@ import (
 
 type App struct {
 	quiet       bool
-	bindAddress BindAddress
+	bindAddress StringList
 	remotePorts Ports
 }
 
