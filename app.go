@@ -12,31 +12,29 @@ import (
 )
 
 type App struct {
-	quiet       bool
-	bindAddress StringList
-	remotePorts Ports
+	config Config
 }
 
 func (app App) Error(format string, args ...any) {
-	if !app.quiet {
+	if !app.config.Quiet {
 		fmt.Fprintf(os.Stderr, format+"\n", args...)
 	}
 }
 
 func (app App) LogInfo(format string, args ...any) {
-	if !app.quiet {
+	if !app.config.Quiet {
 		slog.Info(format, args...)
 	}
 }
 
 func (app App) LogDebug(format string, args ...any) {
-	if !app.quiet {
+	if !app.config.Quiet {
 		slog.Debug(format, args...)
 	}
 }
 
 func (app App) LogError(format string, args ...any) {
-	if !app.quiet {
+	if !app.config.Quiet {
 		slog.Error(format, args...)
 	}
 }
@@ -46,10 +44,10 @@ func (app App) Run() error {
 	stats := Stats{}
 	go stats.RunServer(ctx)
 
-	if len(app.bindAddress) > 1 {
+	if len(app.config.Bind) > 1 {
 		var g *errgroup.Group
 		g, ctx = errgroup.WithContext(ctx)
-		for _, addr := range app.bindAddress {
+		for _, addr := range app.config.Bind {
 			g.Go(func() error {
 				return app.Listen(ctx, addr, stats)
 			})
@@ -57,7 +55,7 @@ func (app App) Run() error {
 		return g.Wait()
 	}
 
-	return app.Listen(ctx, app.bindAddress[0], stats)
+	return app.Listen(ctx, app.config.Bind[0], stats)
 }
 
 func (app App) Listen(ctx context.Context, addr string, stats Stats) error {
@@ -110,7 +108,7 @@ func (app App) HandleConnection(localConn net.Conn, info *ConnInfo) {
 			"reversed", info.IsReversed)
 	}()
 
-	for _, port := range app.remotePorts {
+	for _, port := range app.config.RemotePorts {
 		if err := app.ConnectRemote(localConn, port, info); err != nil {
 			app.LogDebug("error", "reason", err.Error())
 		} else {

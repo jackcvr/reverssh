@@ -59,11 +59,18 @@ nfpms:
       - apk
       - deb
     contents:
-      - src: openrc/reverssh
-        dst: /etc/init.d/reverssh
+      - src: reverssh.toml
+        dst: /etc/reverssh/reverssh.toml
         type: config|noreplace
         packager: apk
+      - src: openrc/reverssh
+        dst: /etc/init.d/reverssh
+        packager: apk
+
+      - src: reverssh.toml
+        dst: /etc/reverssh/reverssh.toml
+        type: config|noreplace
+        packager: deb
       - src: systemd/reverssh.service
         dst: /lib/systemd/system/reverssh.service
-        type: config|noreplace
         packager: deb

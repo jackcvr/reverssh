@@ -3,7 +3,7 @@ Description=Reversing SSH tarpit
 After=network.target
 
 [Service]
-ExecStart=/usr/local/bin/reverssh -b 0.0.0.0:22 -p 22,2222
+ExecStart=/usr/local/bin/reverssh -c /etc/reverssh/reverssh.toml
 Restart=always
 
 [Install]

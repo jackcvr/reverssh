@@ -1,0 +1,5 @@
+tz = "Europe/Vilnius"
+verbose = false
+quiet = false
+bind = ["0.0.0.0:22"]
+remoteports = [22]

@@ -2,9 +2,13 @@
 
 supervisor=supervise-daemon
 
-command="/usr/local/bin/reverssh"
-command_args="-b 0.0.0.0:22 -p 22,2222 -f /var/log/reverssh.log"
 description="Reversing SSH tarpit"
+command="/usr/local/bin/reverssh"
+command_args="-c /etc/reverssh/reverssh.toml"
+command_background=true
+pidfile="/run/${RC_SVCNAME}.pid"
+output_log="/var/log/${RC_SVCNAME}.log"
+error_log="/var/log/${RC_SVCNAME}.log"
 
 depend() {
 	need net

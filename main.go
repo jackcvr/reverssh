@@ -3,12 +3,33 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/pelletier/go-toml/v2"
 	"io"
 	"log"
 	"log/slog"
 	"os"
 	"runtime/debug"
+	"time"
+	_ "time/tzdata"
 )
+
+var configPath = "/etc/reverssh/reverssh.toml"
+
+type Config struct {
+	TZ          string
+	Verbose     bool
+	Quiet       bool
+	Bind        []string
+	RemotePorts []int
+}
+
+var config = Config{
+	TZ:          "Europe/Vilnius",
+	Verbose:     false,
+	Quiet:       false,
+	Bind:        []string{"0.0.0.0:22"},
+	RemotePorts: []int{22},
+}
 
 func init() {
 	debug.SetGCPercent(25)
@@ -16,58 +37,44 @@ func init() {
 }
 
 func main() {
-	var verbose bool
-	var logFile string
 	var showActive bool
-	var app App
 
-	flag.BoolVar(&verbose, "v", false, "Verbose mode")
-	flag.StringVar(&logFile, "f", "", "Log file (default stdout)")
+	flag.StringVar(&configPath, "c", configPath, "Path to TOML config file")
 	flag.BoolVar(&showActive, "active", false, "Show active connections info")
-	flag.BoolVar(&app.quiet, "q", false, "Do not print anything")
-	flag.Var(&app.bindAddress, "b", "Local address to listen on")
-	flag.Var(&app.remotePorts, "p", "Remote ports to connect to, e.g. '22,2222'")
 	flag.Parse()
-
-	if len(app.bindAddress) == 0 {
-		app.bindAddress = StringList{"0.0.0.0:22"}
-	}
 
 	if showActive {
 		data, err := ReadStats()
 		if err != nil && err != io.EOF {
-			app.Error(err.Error())
+			panic(err)
 		} else {
 			fmt.Print(string(data))
 		}
 		return
 	}
 
+	if data, err := os.ReadFile(configPath); err != nil {
+		panic(err)
+	} else if err = toml.Unmarshal(data, &config); err != nil {
+		panic(err)
+	}
+
+	if loc, err := time.LoadLocation(config.TZ); err != nil {
+		panic(err)
+	} else {
+		time.Local = loc
+	}
+
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 	level := slog.LevelInfo
-	if verbose {
+	if config.Verbose {
 		level = slog.LevelDebug
 	}
-	logger, err := NewLogger(logFile, level)
-	if err != nil {
-		app.Error(err.Error())
-		return
-	}
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: level}))
 	slog.SetDefault(logger)
 
-	if err = app.Run(); err != nil {
+	app := App{config: config}
+	if err := app.Run(); err != nil {
 		app.Error(err.Error())
 	}
-}
-
-func NewLogger(file string, level slog.Level) (*slog.Logger, error) {
-	w := os.Stdout
-	if file != "" {
-		var err error
-		w, err = os.OpenFile(file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return slog.New(slog.NewJSONHandler(w, &slog.HandlerOptions{Level: level})), nil
 }
