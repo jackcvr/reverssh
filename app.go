@@ -79,6 +79,11 @@ func (app App) Listen(ctx context.Context, addr string, stats Stats) error {
 			continue
 		}
 		key := c.RemoteAddr().String()
+		if _, ok := stats[key]; ok {
+			_ = c.Close()
+			app.LogInfo("rejected", "reason", "already connected", "raddr", c.RemoteAddr())
+			continue
+		}
 		info := &ConnInfo{}
 		stats[key] = info
 		go func() {
